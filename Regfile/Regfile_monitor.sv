@@ -14,9 +14,11 @@
 `define REGFILE_MON_SV
 class regfile_monitor;
     virtual RegArr_if vif;
+    mailbox #(regfile_txn) mon2scb; //Add mailbox to send transactions to scoreboard
 
-    function new (virtual RegArr_if vif);
+    function new (virtual RegArr_if vif, mailbox #(regfile_txn) mon2scb);
         this.vif = vif;
+        this.mon2scb = mon2scb;
     endfunction
 
     //monitor task will run forever
@@ -42,6 +44,9 @@ class regfile_monitor;
                     $display("[MON] Read1 Detected: Addr = %0d, Data = 0x%0h", t.raddr1, t.rdata1);
                 if (vif.re2)
                     $display("[MON] Read2 Detected: Addr = %0d, Data = 0x%0h", t.raddr2, t.rdata2);
+
+
+                    mon2scb.put(t);
             end
         end
     endtask 
