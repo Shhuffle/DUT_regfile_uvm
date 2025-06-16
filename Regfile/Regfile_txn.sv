@@ -14,6 +14,9 @@ class regfile_txn;
     rand bit [2:0] raddr1;
     rand bit [2:0] raddr2;
 
+    logic bit [31:0] rdata1;
+    logic bit [31:0] rdata2; //will be used by the monitor to store the read value form the interface.
+
      //it will ensure that there is no simultanesous read and write to the same mem location. 
      constraint no_mem_overlap {
     (we && re1)  -> (waddr != raddr1);  //NO procedural if is allowed in constraint.
@@ -26,8 +29,10 @@ class regfile_txn;
         raddr1 inside {[0:7]};
         raddr2 inside {[0:7]};
         waddr inside {[0:7]};
-        
-       
+    } 
+    //to ensure one operation at a time becuase our testbench is desined in such a way that only one operation is monitored at a time.
+    constraint one_op{
+        we + re1 + re2 <= 1;
     }
 
     function void display();
