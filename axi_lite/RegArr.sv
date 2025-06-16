@@ -86,7 +86,4 @@ endmodule
 
 
 
-//Purpose of the transaction class
-//It will generate the random input signal we will need to test our DUT and group them in a single object
-//different constraints can be used to limit the random value to certain order or pattern.
-//also we can display the generated signal values.
+
