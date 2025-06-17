@@ -42,7 +42,7 @@ class regfile_scoreboard;
             ref_mem[t.waddr] = t.wdata;
         end
         if(t.re1) begin 
-            if(ref_mem[t.raddr1] !== rdata1)
+            if(ref_mem[t.raddr1] !== t.rdata1)
             $error("[SCB] Mismatch @ raddr1=%0d: Expected=0x%0h, Got=0x%0h",
                   t.raddr1, ref_mem[t.raddr1], t.rdata1);
         else
