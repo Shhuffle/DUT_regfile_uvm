@@ -11,10 +11,23 @@ class regfile_driver;
     virtual RegArr_if vif; //Here the vif is the pointer to the original interface
 
     regfile_txn txn;
+    mainbox gen2drv;
 
-    function new(virtual RegArr_if vif);
+    function new(virtual RegArr_if vif, mailbox gen2drv);
         this.vif = vif;  //this will connect the virtual interface passed form the tesbench to our class scoped interface
+        this.gen2drv = gen2drv;
     endfunction
+
+
+    //To receive all the transaction stream form the generator
+    task run()
+        regfile_txn t;
+        forever begin 
+            gen2drv.get(t);
+            drive(t);
+        end 
+    endtask
+
     //USING the transaction object we will now pass the signal to the DUT through our virtual interface
     task drive(ref regfile_txn t); //ref - pass by refrence
         vif.we     <= t.we;
