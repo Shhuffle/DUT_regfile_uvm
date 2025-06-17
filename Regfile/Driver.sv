@@ -1,35 +1,28 @@
-//as the name suggest it drives the signals from the transaction and connect it with the DUT.
-//also controls handshaking or timing.
-
-
-
-
+// As the name suggests, it drives the signals from the transaction and connects them to the DUT.
+// Also controls handshaking or timing.
 
 `define REGFILE_DRV_SV
 
 class regfile_driver;
-    virtual RegArr_if vif; //Here the vif is the pointer to the original interface
-
-    regfile_txn txn;
-    mainbox gen2drv;
+    virtual RegArr_if vif;           // Pointer to the original interface
+    mailbox gen2drv;                 // Mailbox to receive transactions from generator
 
     function new(virtual RegArr_if vif, mailbox gen2drv);
-        this.vif = vif;  //this will connect the virtual interface passed form the tesbench to our class scoped interface
+        this.vif = vif;
         this.gen2drv = gen2drv;
     endfunction
 
-
-    //To receive all the transaction stream form the generator
-    task run()
+    // Receives all transaction streams from the generator
+    task run();
         regfile_txn t;
         forever begin 
-            gen2drv.get(t);
-            drive(t);
+            gen2drv.get(t);  // Get transaction from mailbox
+            drive(t);        // Drive transaction to DUT
         end 
     endtask
 
-    //USING the transaction object we will now pass the signal to the DUT through our virtual interface
-    task drive(ref regfile_txn t); //ref - pass by refrence
+    // Using the transaction object, pass the signal to the DUT via the virtual interface
+    task drive(ref regfile_txn t);  // Pass-by-reference for possible future scoreboard use
         vif.we     <= t.we;
         vif.re1    <= t.re1;
         vif.re2    <= t.re2;
@@ -38,26 +31,14 @@ class regfile_driver;
         vif.raddr2 <= t.raddr2;
         vif.wdata  <= t.wdata;
         vif.en     <= 1;
-        
 
-        t.display();
-        repeat (2) @(posedge vif.clk); //wait for two clock cycle
-        vif.en <= 0; //disable the module after two clock cycle 
+        t.display();  // Optional debug
 
-        repeat(2) @(posedge vif.clk) //wait for the other two second to return to the ideal state 
-        //lets say the curr_state in the DUT was write (based on the transaction signal t)
-        //then for one clock cycle it will write data
-        //in the next cycle it will set the current_state is done 
-        //finally the state changes to ideal state
+        repeat (2) @(posedge vif.clk); // Wait two cycles for op to complete
+        vif.en <= 0;                   // Disable signals
 
+        repeat (2) @(posedge vif.clk); // Wait extra time to return to idle
     endtask
+endclass
 
-endclass 
-`endif //REGFILE_DRV_SV 
-        
-
-
-
-
-
-
+`endif // REGFILE_DRV_SV
